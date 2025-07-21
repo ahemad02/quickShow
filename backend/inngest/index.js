@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
 import Show from "../models/Show.js";
+import sendEmail from "../configs/nodemailer.js";
 
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
 
@@ -70,4 +71,31 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
     }
 );
 
-export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation, releaseSeatsAndDeleteBooking];
+const sendBookingConfirmationEmail = inngest.createFunction(
+    { id: "send-booking-confirmation-email" },
+    { event: "app/show.booked" },
+    async ({ event, step }) => {
+        await step.run('check-payment-status', async () => {
+            const { bookingId } = event.data;
+            const booking = await Booking.findById(bookingId).populate({ path: "show", populate: { path: "movie", model: "Movie" } }).populate("user");
+
+            await sendEmail({
+                to: booking.user.email,
+                subject: `Payment Confirmation for: "${booking.show.movie.title}" booked!`,
+                body: `<div style="font-size: 20px; font-weight: 600; margin: 10px 0;">Hello ${booking.user.name},</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Your booking for "${booking.show.movie.title}" has been confirmed.</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Movie: ${booking.show.movie.title}</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Date: ${new Date(booking.show.date).toLocaleDateString()}</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Time: ${booking.show.time}</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Seats: ${booking.bookedSeats.join(", ")}</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Amount: ${booking.amount}</div>` +
+                    `<div style="font-size: 16px; margin: 10px 0;">Thank you for booking with us!</div>`
+            })
+
+        });
+
+
+    }
+);
+
+export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation, releaseSeatsAndDeleteBooking, sendBookingConfirmationEmail];
