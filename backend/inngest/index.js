@@ -75,20 +75,19 @@ const sendBookingConfirmationEmail = inngest.createFunction(
     { id: "send-booking-confirmation-email" },
     { event: "app/show.booked" },
     async ({ event, step }) => {
-        await step.run('check-payment-status', async () => {
-            const { bookingId } = event.data;
-            const booking = await Booking.findById(bookingId).populate({ path: "show", populate: { path: "movie", model: "Movie" } }).populate("user");
 
-            await sendEmail({
-                to: booking.user.email,
-                subject: `Payment Confirmation for: "${booking.show.movie.title}" booked!`,
-                body: `<h1>Payment Confirmation for: "${booking.show.movie.title}"</h1>`
-            })
+        const { bookingId } = event.data;
+        const booking = await Booking.findById(bookingId).populate({ path: "show", populate: { path: "movie", model: "Movie" } }).populate("user");
 
-        });
+        await sendEmail({
+            to: booking.user.email,
+            subject: `Payment Confirmation for: "${booking.show.movie.title}" booked!`,
+            body: `<h1>Payment Confirmation for: "${booking.show.movie.title}"</h1>`
+        })
+
+    });
 
 
-    }
-);
+
 
 export const functions = [syncUserCreation, syncUserDeletion, syncUserUpdation, releaseSeatsAndDeleteBooking, sendBookingConfirmationEmail];
