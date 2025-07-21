@@ -82,14 +82,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
             await sendEmail({
                 to: booking.user.email,
                 subject: `Payment Confirmation for: "${booking.show.movie.title}" booked!`,
-                body: `<div style="font-size: 20px; font-weight: 600; margin: 10px 0;">Hello ${booking.user.name},</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Your booking for "${booking.show.movie.title}" has been confirmed.</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Movie: ${booking.show.movie.title}</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Date: ${new Date(booking.show.date).toLocaleDateString()}</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Time: ${booking.show.time}</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Seats: ${booking.bookedSeats.join(", ")}</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Amount: ${booking.amount}</div>` +
-                    `<div style="font-size: 16px; margin: 10px 0;">Thank you for booking with us!</div>`
+                body: `<h1>Payment Confirmation for: "${booking.show.movie.title}"</h1>`
             })
 
         });
